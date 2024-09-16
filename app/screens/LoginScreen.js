@@ -55,7 +55,14 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <Background>
-      <BackButton goBack={navigation.goBack} />
+      <BackButton
+        goBack={() =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "StartScreen" }],
+          })
+        }
+      />
       <Logo />
       <Header>Hello.</Header>
       <TextInput

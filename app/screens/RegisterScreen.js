@@ -1,6 +1,10 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import { Text } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios"; // For API calls
+import { auth } from "../../firebaseConfig";
+import { createUserWithEmailAndPassword, getIdToken } from "firebase/auth"; // Firebase methods
 import Background from "../components/Background";
 import Logo from "../components/Logo";
 import Header from "../components/Header";
@@ -11,8 +15,9 @@ import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
 import { nameValidator } from "../helpers/nameValidator";
-import { auth } from "../../firebaseConfig"; // Import the Firebase auth instance
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // Import the correct methods
+
+// Get your root URL from environment variables
+const ROOT_URL = process.env.REACT_APP_API_URL;
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState({ value: "", error: "" });
@@ -32,10 +37,10 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
 
-    setLoading(true); // Start loading spinner
+    setLoading(true);
 
     try {
-      // Create a new user with Firebase Authentication
+      // Sign up using Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email.value,
@@ -43,31 +48,44 @@ export default function RegisterScreen({ navigation }) {
       );
       const user = userCredential.user;
 
-      // Update the user's profile to add the display name
-      await updateProfile(user, {
-        displayName: name.value,
+      // Get Firebase ID Token
+      const firebaseIdToken = await getIdToken(user);
+
+      // Call the Playground API to authenticate the user
+      const response = await axios.post(`${ROOT_URL}/playground/login/`, {
+        firebase_id_token: firebaseIdToken,
       });
 
-      console.log("User registered:", user);
+      // Save token in AsyncStorage
+      await AsyncStorage.setItem("auth_token", response.data.token);
 
-      // Navigate to the HomeScreen after successful registration
+      console.log("User registered:", response.data);
+
+      // Navigate to Select Credit Cards
       navigation.reset({
         index: 0,
-        routes: [{ name: "HomeScreen" }],
+        routes: [{ name: "AddCardScreen" }],
       });
     } catch (error) {
-      console.error("Error registering user:", error.message);
-      alert(error.message);
+      console.error("Sign-up failed:", error.message);
+      Alert.alert("Sign-Up Error", error.message);
     } finally {
-      setLoading(false); // Stop loading spinner
+      setLoading(false);
     }
   };
 
   return (
     <Background>
-      <BackButton goBack={navigation.goBack} />
+      <BackButton
+        goBack={() =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "StartScreen" }],
+          })
+        }
+      />
       <Logo />
-      <Header>Welcome.</Header>
+      <Header>Sign Up</Header>
       <TextInput
         label="Name"
         returnKeyType="next"
@@ -107,7 +125,7 @@ export default function RegisterScreen({ navigation }) {
         Sign Up
       </Button>
       <View style={styles.row}>
-        <Text>I already have an account!</Text>
+        <Text>Already have an account?</Text>
         <TouchableOpacity onPress={() => navigation.replace("LoginScreen")}>
           <Text style={styles.link}>Log in</Text>
         </TouchableOpacity>

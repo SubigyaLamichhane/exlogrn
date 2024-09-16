@@ -10,10 +10,10 @@ export default function StartScreen({ navigation }) {
   return (
     <Background>
       <Logo />
-      <Header>Welcome to Exlogrn</Header>
+      <Header>Welcome to Smart Credit</Header>
       <Paragraph>
-        A starter app template for React Native Expo, featuring a ready-to-use
-        login screen.
+        Explore seamless credit management and get personalized card
+        recommendations and explore various discounts and offers.
       </Paragraph>
       <Button
         mode="contained"
