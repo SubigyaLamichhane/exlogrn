@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Text } from "react-native-paper";
-
 import Background from "../components/Background";
 import Logo from "../components/Logo";
 import Header from "../components/Header";
@@ -12,26 +11,56 @@ import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
 import { nameValidator } from "../helpers/nameValidator";
+import { auth } from "../../firebaseConfig"; // Import the Firebase auth instance
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // Import the correct methods
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState({ value: "", error: "" });
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
+  const [loading, setLoading] = useState(false);
 
-  const onSignUpPressed = () => {
+  const onSignUpPressed = async () => {
     const nameError = nameValidator(name.value);
     const emailError = emailValidator(email.value);
     const passwordError = passwordValidator(password.value);
+
     if (emailError || passwordError || nameError) {
       setName({ ...name, error: nameError });
       setEmail({ ...email, error: emailError });
       setPassword({ ...password, error: passwordError });
       return;
     }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "HomeScreen" }],
-    });
+
+    setLoading(true); // Start loading spinner
+
+    try {
+      // Create a new user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.value,
+        password.value
+      );
+      const user = userCredential.user;
+
+      // Update the user's profile to add the display name
+      await updateProfile(user, {
+        displayName: name.value,
+      });
+
+      console.log("User registered:", user);
+
+      // Navigate to the HomeScreen after successful registration
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "HomeScreen" }],
+      });
+    } catch (error) {
+      console.error("Error registering user:", error.message);
+      alert(error.message);
+    } finally {
+      setLoading(false); // Stop loading spinner
+    }
   };
 
   return (
@@ -71,14 +100,14 @@ export default function RegisterScreen({ navigation }) {
       <Button
         mode="contained"
         onPress={onSignUpPressed}
+        loading={loading}
+        disabled={loading}
         style={{ marginTop: 24 }}
       >
-        Next
+        Sign Up
       </Button>
       <View style={styles.row}>
-        <Text>I already have an account !</Text>
-      </View>
-      <View style={styles.row}>
+        <Text>I already have an account!</Text>
         <TouchableOpacity onPress={() => navigation.replace("LoginScreen")}>
           <Text style={styles.link}>Log in</Text>
         </TouchableOpacity>
