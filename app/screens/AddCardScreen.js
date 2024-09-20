@@ -110,9 +110,21 @@ export default function AddCardScreen() {
   };
 
   const confirmCardSelection = async () => {
-    await axios.post(`${process.env.REACT_APP_API_URL}/playground/card/`, {
-      company_name: selectedCard.cardKey,
-    });
+    await axios.post(
+      `${process.env.REACT_APP_API_URL}/playground/card/`,
+      {
+        company_name: selectedCard.cardKey,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
+          "X-CSRFToken": window.csrf_token,
+          Cookie: window.csrf_token,
+        },
+        withCredentials: true,
+      }
+    );
     Alert.alert("Card added successfully!");
     setModalVisible(false);
   };
