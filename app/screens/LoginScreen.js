@@ -12,6 +12,9 @@ import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
 import { auth } from "../../firebaseConfig"; // Import the Firebase auth instance
 import { signInWithEmailAndPassword } from "firebase/auth"; // Import the Firebase function
+import { Alert } from "react-native";
+import axios from "axios";
+// import { Cookies } from "@react-native-cookies/cookies";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });
@@ -38,7 +41,22 @@ export default function LoginScreen({ navigation }) {
       );
       const user = userCredential.user;
 
-      console.log("User logged in:", user);
+      console.log("User logged in:", user.stsTokenManager.accessToken);
+
+      // login into the platform
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/playground/login/`,
+        {
+          firebase_id_token: user?.stsTokenManager?.accessToken,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json", // Set the correct content type
+          },
+        }
+      );
+
+      console.log("Login response:", response.data);
 
       // Navigate to HomeScreen upon successful login
       navigation.reset({
@@ -47,7 +65,7 @@ export default function LoginScreen({ navigation }) {
       });
     } catch (error) {
       console.error("Login failed:", error.message);
-      alert(error.message); // Display error to the user
+      Alert.alert(error.message); // Display error to the user
     } finally {
       setLoading(false); // Stop loading
     }
