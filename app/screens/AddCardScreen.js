@@ -18,6 +18,7 @@ import { theme } from "../core/theme";
 import BackButton from "../components/BackButton";
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const apiLink = `${process.env.REACT_APP_API_URL}/api/credit-cards`;
 // const apiLink = `https://8f75-202-51-80-201.ngrok-free.app/api/credit-cards`;
@@ -29,6 +30,7 @@ export default function AddCardScreen() {
   const [cardData, setCardData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   const getCardData = async () => {
@@ -56,22 +58,6 @@ export default function AddCardScreen() {
       setCardData(cardDataStatic);
       return;
     } else {
-      //   [
-      // {
-      //     "cardIssuer": "American Airlines Federal Credit Union",
-      //     "card": [
-      //         {
-      //             "cardKey": "aacfu-biz-plat",
-      //             "cardName": "American Airlines Credit Union Visa Business Platinum"
-      //         },
-      //         {
-      //             "cardKey": "aacfu-cashback",
-      //             "cardName": "American Airlines Credit Union Visa Signature Cash Back"
-      //         },
-
-      //     ]
-      // },
-
       const filteredData = cardDataStatic.filter((card) => {
         return card.card.some((card) =>
           card.cardName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -93,23 +79,14 @@ export default function AddCardScreen() {
     data: groupedCards[issuer],
   }));
 
-  // Function to check if the card image exists
-  const getCardImage = async (cardKey) => {
-    // const imagePath = `../../assets/card_images/${cardKey}.jpg`;
-    // try {
-    //   await FileSystem.getInfoAsync(imagePath);
-    //   return imagePath;
-    // } catch {
-    return require("../../assets/credit-card.svg");
-    // }
-  };
-
   const handleCardPress = (card) => {
     setSelectedCard(card);
     setModalVisible(true);
   };
 
   const confirmCardSelection = async () => {
+    setLoading(true);
+    const accessToken = await AsyncStorage.getItem("accessToken");
     await axios.post(
       `${process.env.REACT_APP_API_URL}/playground/card/`,
       {
@@ -118,14 +95,15 @@ export default function AddCardScreen() {
       {
         headers: {
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "69420",
-          "X-CSRFToken": window.csrf_token,
-          Cookie: window.csrf_token,
+          // Set the access token in the Authorization header
+          Authorization: `Bearer ${accessToken}`,
         },
-        withCredentials: true,
       }
     );
+    setLoading(false);
     Alert.alert("Card added successfully!");
+    // navigate back to the homescreen
+    navigation.navigate("HomeScreen");
     setModalVisible(false);
   };
 
@@ -223,7 +201,11 @@ export default function AddCardScreen() {
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={confirmCardSelection}
               >
-                <Text style={styles.buttonText}>Confirm</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={styles.buttonText}>Confirm</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

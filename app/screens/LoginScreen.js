@@ -14,6 +14,7 @@ import { auth } from "../../firebaseConfig"; // Import the Firebase auth instanc
 import { signInWithEmailAndPassword } from "firebase/auth"; // Import the Firebase function
 import { Alert } from "react-native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { Cookies } from "@react-native-cookies/cookies";
 
 export default function LoginScreen({ navigation }) {
@@ -57,6 +58,11 @@ export default function LoginScreen({ navigation }) {
       );
 
       console.log("Login response:", response.data);
+
+      // Set the access token and refresh token in storage using react native async storage
+      await AsyncStorage.setItem("accessToken", response.data.access);
+      await AsyncStorage.setItem("refreshToken", response.data.refresh);
+      // await AsyncStorage.setItem()
 
       // Navigate to HomeScreen upon successful login
       navigation.reset({

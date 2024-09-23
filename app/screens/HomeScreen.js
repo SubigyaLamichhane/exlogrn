@@ -8,9 +8,13 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
-import { Card, Avatar } from "react-native-paper";
+import { Card, Avatar, ActivityIndicator } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../core/theme";
+import { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 // Getting the window width for responsive design
 const windowWidth = Dimensions.get("window").width;
@@ -20,49 +24,102 @@ const avatarImage = require("../../assets/avatar.svg");
 const addIcon = require("../../assets/add.png");
 
 const cardData = [
-  {
-    cardName: "American Express® Gold",
-    spendBonusCategories: [
-      { spendBonusDesc: "4x at restaurants worldwide" },
-      { spendBonusDesc: "4x on groceries at U.S" },
-      { spendBonusDesc: "3x on flights booked directly with airlines" },
-    ],
-    color: "#FFD700", // Yellow
-  },
-  {
-    cardName: "Discover It® Student Cash Back",
-    spendBonusCategories: [
-      { spendBonusDesc: "Earn 5% Cashback Bonus at Grocery Stores" },
-      { spendBonusDesc: "Earn 5% Cashback Bonus at Walmart" },
-      { spendBonusDesc: "1% cash back on all other purchases" },
-    ],
-    color: "#FF6347", // Red
-  },
-  {
-    cardName: "Chase Sapphire",
-    spendBonusCategories: [
-      { spendBonusDesc: "Earn 2x points on dining" },
-      { spendBonusDesc: "Earn 5x points on Lyft ride" },
-    ],
-    color: "#87CEFA", // Light blue
-  },
+  // {
+  //   cardName: "American Express® Gold",
+  //   spendBonusCategories: [
+  //     { spendBonusDesc: "4x at restaurants worldwide" },
+  //     { spendBonusDesc: "4x on groceries at U.S" },
+  //     { spendBonusDesc: "3x on flights booked directly with airlines" },
+  //   ],
+  //   color: "#FFD700", // Yellow
+  // },
+  // {
+  //   cardName: "Discover It® Student Cash Back",
+  //   spendBonusCategories: [
+  //     { spendBonusDesc: "Earn 5% Cashback Bonus at Grocery Stores" },
+  //     { spendBonusDesc: "Earn 5% Cashback Bonus at Walmart" },
+  //     { spendBonusDesc: "1% cash back on all other purchases" },
+  //   ],
+  //   color: "#FF6347", // Red
+  // },
+  // {
+  //   cardName: "Chase Sapphire",
+  //   spendBonusCategories: [
+  //     { spendBonusDesc: "Earn 2x points on dining" },
+  //     { spendBonusDesc: "Earn 5x points on Lyft ride" },
+  //   ],
+  //   color: "#87CEFA", // Light blue
+  // },
 ];
+
+const colors = ["#252a16", "#ee3324", "#edbd57"];
+const contrastingColors = ["#dfddd0", "#f3f7f8", "#eee8da"];
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const [cardData, setCardData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const renderCard = ({ item }) => (
-    <Card style={[styles.card, { backgroundColor: item.color }]}>
-      <Card.Title title={item.cardName} />
-      <Card.Content>
-        {item.spendBonusCategories.map((category, index) => (
-          <Text key={index} style={styles.bonusText}>
-            {category.spendBonusDesc}
+  useFocusEffect(() => {
+    setLoading(true);
+    // Fetch card data when the component is mounted
+    const fetchCardData = async () => {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/homeviewapi/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log("Card data:", response.data);
+      setCardData(response.data);
+      setLoading(false);
+    };
+
+    fetchCardData();
+  }, []);
+
+  const renderCard = ({ item, index }) => {
+    // Use the index value combined with the length of the colors array to get a more variable output
+    const randomIndex = index % colors.length;
+
+    return (
+      <Card style={[styles.card, { backgroundColor: colors[randomIndex] }]}>
+        <Card.Content>
+          <Text
+            style={[
+              styles.cardTitle,
+              { color: contrastingColors[randomIndex] },
+            ]}
+          >
+            {item.cardName}
           </Text>
-        ))}
-      </Card.Content>
-    </Card>
-  );
+          {item.spendBonusCategories.map((category, i) => (
+            <React.Fragment key={i}>
+              <Text
+                style={[
+                  styles.bonusTitle,
+                  { color: contrastingColors[randomIndex] },
+                ]}
+              >
+                {category.spendBonusCategoryName}
+              </Text>
+              <Text
+                style={[
+                  styles.bonusText,
+                  { color: contrastingColors[randomIndex] },
+                ]}
+              >
+                {category.spendBonusDesc}
+              </Text>
+            </React.Fragment>
+          ))}
+        </Card.Content>
+      </Card>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -81,13 +138,19 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={cardData}
-        renderItem={renderCard}
-        keyExtractor={(item, index) => index.toString()}
-        style={styles.cardList}
-        contentContainerStyle={styles.cardListContainer}
-      />
+      {cardData.length > 0 ? (
+        <FlatList
+          data={cardData}
+          renderItem={renderCard}
+          keyExtractor={(item, index) => index.toString()}
+          style={styles.cardList}
+          contentContainerStyle={styles.cardListContainer}
+        />
+      ) : loading ? (
+        <ActivityIndicator size="large" color="#007bff" />
+      ) : (
+        <Text>Please add more cards to see the available offers.</Text>
+      )}
 
       <TouchableOpacity
         style={styles.fab}
@@ -104,6 +167,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: "#fff",
+    position: "relative",
+  },
+  cardTitle: {
+    fontSize: 30,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  bonusTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
   headerContainer: {
     flexDirection: "row",
