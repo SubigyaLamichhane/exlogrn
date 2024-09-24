@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -12,20 +12,23 @@ import {
   SectionList,
   Alert,
 } from "react-native";
-import { Avatar } from "react-native-paper";
+import { Avatar, Card } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../core/theme";
 import BackButton from "../components/BackButton";
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { CardDataContext } from "../context/CardDataContext";
 
-const apiLink = `${process.env.REACT_APP_API_URL}/api/credit-cards`;
 // const apiLink = `https://8f75-202-51-80-201.ngrok-free.app/api/credit-cards`;
 
-let cardDataStatic = [];
+// let cardDataStatic = [];
 
-export default function AddCardScreen() {
+export default function AddCardScreen({ route }) {
+  const { cardDataStatic, loading: loadingCardData } =
+    useContext(CardDataContext);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [cardData, setCardData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,25 +36,10 @@ export default function AddCardScreen() {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  const getCardData = async () => {
-    try {
-      const { data } = await axios.get(apiLink, {
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "69420",
-        },
-      });
-      // console.log("Card data:", data);
-      cardDataStatic = data;
-      setCardData(data);
-    } catch (error) {
-      console.error("Error fetching card data:", error);
-    }
-  };
-
   useEffect(() => {
-    getCardData();
-  }, []);
+    console.log("Card data static:", cardDataStatic);
+    setCardData(cardDataStatic);
+  }, [cardDataStatic]);
 
   useEffect(() => {
     if (searchTerm === "") {
@@ -67,11 +55,17 @@ export default function AddCardScreen() {
     }
   }, [searchTerm]);
 
-  // Group cards by issuer
-  const groupedCards = cardData.reduce((acc, card) => {
-    (acc[card.cardIssuer] = acc[card.cardIssuer] || []).push(...card.card);
-    return acc;
-  }, {});
+  // Safely reduce cardData by ensuring it's an array and checking each card's structure
+  const groupedCards = (Array.isArray(cardData) ? cardData : []).reduce(
+    (acc, card) => {
+      // Check if card and cardIssuer exist, and card.card is an array
+      if (card && card.cardIssuer && Array.isArray(card.card)) {
+        (acc[card.cardIssuer] = acc[card.cardIssuer] || []).push(...card.card);
+      }
+      return acc;
+    },
+    {}
+  );
 
   // Format data for SectionList
   const sections = Object.keys(groupedCards).map((issuer) => ({
