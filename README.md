@@ -24,8 +24,8 @@ Before you begin, ensure you have the following installed on your machine:
 Clone the repository to your local machine using Git:
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/SubigyaLamichhane/Smart-Credit-Frontend.git
+cd Smart-Credit-Frontend
 ```
 
 ### Step 2: Install Dependencies
