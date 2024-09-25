@@ -18,6 +18,8 @@ import axios from "axios";
 import { FloatingAction } from "react-native-floating-action";
 import { ScrollView } from "react-native-gesture-handler";
 import { CardDataContext } from "../context/CardDataContext";
+import Geolocation from "react-native-geolocation-service";
+import { Alert } from "react-native";
 // Getting the window width for responsive design
 const windowWidth = Dimensions.get("window").width;
 
@@ -25,8 +27,8 @@ const windowWidth = Dimensions.get("window").width;
 const avatarImage = require("../../assets/avatar.svg");
 const addIcon = require("../../assets/add.png");
 
-const colors = ["#252a16", "#ee3324", "#edbd57"];
-const contrastingColors = ["#dfddd0", "#f3f7f8", "#eee8da"];
+const colors = ["#ffdd2a", "#fd5d4e", "#6ac8ff"];
+// const contrastingColors = ["#dfddd0", "#f3f7f8", "#eee8da"];
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -34,6 +36,66 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const { cardDataStatic, loading: loadingCardData } =
     useContext(CardDataContext);
+
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      // Request permission for location access (iOS specific)
+      const hasPermission = await requestLocationPermission();
+
+      if (!hasPermission) {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is required to access your location."
+        );
+        return;
+      }
+
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+          callApi({ latitude, longitude });
+        },
+        (error) => {
+          Alert.alert("Error", error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    };
+
+    const requestLocationPermission = async () => {
+      try {
+        const granted = await Geolocation.requestAuthorization("whenInUse");
+        return granted === "granted";
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    };
+
+    const callApi = async (locationData) => {
+      try {
+        const accessToken = await AsyncStorage.getItem("accessToken");
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/nearbyapi/`,
+          locationData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("API Response:", response.data);
+      } catch (error) {
+        console.error("API Error:", error);
+      }
+    };
+
+    fetchLocation();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -97,7 +159,7 @@ export default function HomeScreen() {
           <Text
             style={[
               styles.cardTitle,
-              { color: contrastingColors[randomIndex] },
+              // { color: contrastingColors[randomIndex] },
             ]}
           >
             {item.cardName}
@@ -106,18 +168,18 @@ export default function HomeScreen() {
             <React.Fragment key={i}>
               <Text
                 style={[
-                  styles.bonusTitle,
-                  { color: contrastingColors[randomIndex] },
-                ]}
-              >
-                {category.spendBonusCategoryName}
-              </Text>
-              <Text
-                style={[
                   styles.bonusText,
-                  { color: contrastingColors[randomIndex] },
+                  // { color: contrastingColors[randomIndex] },
                 ]}
               >
+                <Text
+                  style={[
+                    styles.bonusTitle,
+                    // { color: contrastingColors[randomIndex] },
+                  ]}
+                >
+                  {category.spendBonusCategoryName}:{" "}
+                </Text>
                 {category.spendBonusDesc}
               </Text>
             </React.Fragment>
@@ -208,6 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 5,
+    marginTop: 10,
   },
   headerContainer: {
     flexDirection: "row",
