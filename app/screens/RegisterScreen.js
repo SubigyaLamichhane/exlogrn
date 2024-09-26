@@ -76,7 +76,7 @@ export default function RegisterScreen({ navigation }) {
         }
       );
 
-      console.log("Login response:", response.data);
+      // console.log("Login response:", response.data);
 
       // Set the access token and refresh token in storage using react native async storage
       await AsyncStorage.setItem("accessToken", response.data.access);

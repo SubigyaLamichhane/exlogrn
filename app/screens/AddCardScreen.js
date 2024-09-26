@@ -33,7 +33,7 @@ export default function AddCardScreen({ route }) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log("Card data static:", cardDataStatic);
+    // console.log("Card data static:", cardDataStatic);
     setCardData(cardDataStatic);
   }, [cardDataStatic]);
 

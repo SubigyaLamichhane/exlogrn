@@ -42,7 +42,7 @@ export default function LoginScreen({ navigation }) {
       );
       const user = userCredential.user;
 
-      console.log("User logged in:", user.stsTokenManager.accessToken);
+      // console.log("User logged in:", user.stsTokenManager.accessToken);
 
       // login into the platform
       const response = await axios.post(
@@ -58,7 +58,7 @@ export default function LoginScreen({ navigation }) {
         }
       );
 
-      console.log("Login response:", response.data);
+      // console.log("Login response:", response.data);
 
       // Set the access token and refresh token in storage using react native async storage
       await AsyncStorage.setItem("accessToken", response.data.access);

@@ -21,7 +21,7 @@ export const CardDataProvider = ({ children }) => {
       });
       setCardDataStatic(data);
       setLoading(false);
-      console.log("Card data fetched successfully", data);
+      // console.log("Card data fetched successfully", data);
     } catch (error) {
       console.error("Error fetching card data:", error);
       setLoading(false);

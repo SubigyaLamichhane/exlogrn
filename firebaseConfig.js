@@ -29,7 +29,9 @@ if (!getApps().length) {
 let auth;
 try {
   auth = getAuth(app);
+  // console.log(auth);
 } catch (error) {
+  // console.log
   // If getAuth throws an error, it means auth has not been initialized, so we initialize it here
   if (error.message.includes("auth/initialize-auth")) {
     auth = initializeAuth(app, {
