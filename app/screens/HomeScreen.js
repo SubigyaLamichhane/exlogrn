@@ -19,7 +19,7 @@ import { FloatingAction } from "react-native-floating-action";
 import { ScrollView } from "react-native-gesture-handler";
 import { CardDataContext } from "../context/CardDataContext";
 import Geolocation from "react-native-geolocation-service";
-import { Alert } from "react-native";
+import { Alert, Platform, PermissionsAndroid } from "react-native";
 // Getting the window width for responsive design
 const windowWidth = Dimensions.get("window").width;
 
