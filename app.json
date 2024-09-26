@@ -12,17 +12,25 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.subigya.Exlogrn"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/app.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["INTERNET"]
+      "permissions": [
+        "INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/app.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c5947633-c2bf-47c7-81af-59164dd5365f"
+      }
     }
   }
 }

@@ -233,7 +233,9 @@ export default function HomeScreen() {
           {cardData.map((item, index) => renderCard({ item, index }))}
         </ScrollView>
       ) : loading ? (
-        <ActivityIndicator size="large" color="#007bff" />
+        <Text>
+          <ActivityIndicator size="large" color="#007bff" />
+        </Text>
       ) : (
         <Text>Please add more cards to see the available offers.</Text>
       )}
