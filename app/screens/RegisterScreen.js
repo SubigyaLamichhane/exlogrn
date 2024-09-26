@@ -24,6 +24,7 @@ export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const onSignUpPressed = async () => {
     const nameError = nameValidator(name.value);
@@ -52,14 +53,33 @@ export default function RegisterScreen({ navigation }) {
       const firebaseIdToken = await getIdToken(user);
 
       // Call the Playground API to authenticate the user
-      const response = await axios.post(`${ROOT_URL}/playground/login/`, {
-        firebase_id_token: firebaseIdToken,
-      });
+      // const response = await axios.post(`${ROOT_URL}/playground/login/`, {
+      //   firebase_id_token: firebaseIdToken,
+      // });
 
       // Save token in AsyncStorage
-      await AsyncStorage.setItem("auth_token", response.data.token);
+      // await AsyncStorage.setItem("auth_token", response.data.token);
 
-      console.log("User registered:", response.data);
+      // console.log("User registered:", response.data);
+
+      // login into the platform
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/playground/login/`,
+        {
+          firebase_id_token: user?.stsTokenManager?.accessToken,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json", // Set the correct content type
+          },
+        }
+      );
+
+      console.log("Login response:", response.data);
+
+      // Set the access token and refresh token in storage using react native async storage
+      await AsyncStorage.setItem("accessToken", response.data.access);
+      await AsyncStorage.setItem("refreshToken", response.data.refresh);
 
       // Navigate to Select Credit Cards
       navigation.reset({
@@ -69,6 +89,7 @@ export default function RegisterScreen({ navigation }) {
     } catch (error) {
       console.error("Sign-up failed:", error.message);
       Alert.alert("Sign-Up Error", error.message);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -115,6 +136,7 @@ export default function RegisterScreen({ navigation }) {
         errorText={password.error}
         secureTextEntry
       />
+      <Text style={{ color: "red" }}>{error}</Text>
       <Button
         mode="contained"
         onPress={onSignUpPressed}

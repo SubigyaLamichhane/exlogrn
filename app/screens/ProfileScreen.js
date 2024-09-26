@@ -35,6 +35,8 @@ export default function ProfileScreen({ navigation }) {
     try {
       await signOut(auth); // Sign out from Firebase
       await AsyncStorage.removeItem("firebase_access_token"); // Remove token from local storage
+      await AsyncStorage.removeItem("accessToken"); // Remove token from local storage
+      await AsyncStorage.removeItem("refreshToken"); // Remove token from local storage
       navigation.reset({
         index: 0,
         routes: [{ name: "StartScreen" }], // Navigate back to login screen after sign out
