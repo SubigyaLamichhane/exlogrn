@@ -42,23 +42,23 @@ export default function LoginScreen({ navigation }) {
       );
       const user = userCredential.user;
 
-      // console.log("User logged in:", user.stsTokenManager.accessToken);
+      console.log("User logged in:", user.stsTokenManager.accessToken);
 
       // login into the platform
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/playground/login/`,
         {
-          firebase_id_token: user?.stsTokenManager?.accessToken,
+          firebase_id_token: user.stsTokenManager.accessToken,
         },
         {
           headers: {
             "Content-Type": "application/json", // Set the correct content type
-            "ngrok-skip-browser-warning": "69420",
+            "ngrok-skip-browser-warning": "89429",
           },
         }
       );
 
-      // console.log("Login response:", response.data);
+      console.log("Login response:", response.data);
 
       // Set the access token and refresh token in storage using react native async storage
       await AsyncStorage.setItem("accessToken", response.data.access);

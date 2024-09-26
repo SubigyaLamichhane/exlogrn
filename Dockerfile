@@ -23,5 +23,5 @@ RUN npx expo login -u testusername881 -p 3Ssy3i_VhsZgU2y
 EXPOSE 19000
 
 # Start the Expo development server using npx
-CMD ["npx", "expo", "start", "-c", "--tunnel"]
+CMD ["npx", "expo", "start", "-c"]
 
