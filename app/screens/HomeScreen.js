@@ -28,7 +28,6 @@ const avatarImage = require("../../assets/avatar.svg");
 const addIcon = require("../../assets/add.png");
 
 const colors = ["#ffdd2a", "#fd5d4e", "#6ac8ff"];
-// const contrastingColors = ["#dfddd0", "#f3f7f8", "#eee8da"];
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -41,7 +40,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchLocation = async () => {
-      // Request permission for location access (iOS specific)
+      // Request location permission based on the platform
       const hasPermission = await requestLocationPermission();
 
       if (!hasPermission) {
@@ -52,6 +51,7 @@ export default function HomeScreen() {
         return;
       }
 
+      // Get current location
       Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -65,16 +65,36 @@ export default function HomeScreen() {
       );
     };
 
+    // Request location permission function
     const requestLocationPermission = async () => {
       try {
-        const granted = await Geolocation.requestAuthorization("whenInUse");
-        return granted === "granted";
+        if (Platform.OS === "ios") {
+          // iOS specific permission request
+          const granted = await Geolocation.requestAuthorization("whenInUse");
+          return granted === "granted";
+        } else if (Platform.OS === "android") {
+          // Android specific permission request
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Location Permission",
+              message:
+                "This app needs access to your location to provide nearby services.",
+              buttonNeutral: "Ask Me Later",
+              buttonNegative: "Cancel",
+              buttonPositive: "OK",
+            }
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        }
+        return false;
       } catch (err) {
         console.warn(err);
         return false;
       }
     };
 
+    // API call function
     const callApi = async (locationData) => {
       try {
         const accessToken = await AsyncStorage.getItem("accessToken");
@@ -126,12 +146,10 @@ export default function HomeScreen() {
         const cardDataStaticArray = cardDataStatic.reduce((acc, cardIssuer) => {
           return acc.concat(cardIssuer.card);
         }, []);
-        console.log("Card data:", response.data, cardDataStaticArray);
         const getCardName = (cardKey) => {
           const card = cardDataStaticArray.find(
             (card) => card.cardKey === cardKey
           );
-          console.log("Card:", card, cardKey);
           return card ? card.cardName : cardKey;
         };
 
@@ -152,20 +170,12 @@ export default function HomeScreen() {
   );
 
   const renderCard = ({ item, index }) => {
-    // Use the index value combined with the length of the colors array to get a more variable output
     const randomIndex = index % colors.length;
 
     return (
       <Card style={[styles.card, { backgroundColor: colors[randomIndex] }]}>
         <Card.Content>
-          <Text
-            style={[
-              styles.cardTitle,
-              // { color: contrastingColors[randomIndex] },
-            ]}
-          >
-            {item.cardName}
-          </Text>
+          <Text style={[styles.cardTitle]}>{item.cardName}</Text>
           {item.spendBonusCategories.map((category, i) => (
             <React.Fragment key={i}>
               <Text
@@ -174,12 +184,7 @@ export default function HomeScreen() {
                   // { color: contrastingColors[randomIndex] },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.bonusTitle,
-                    // { color: contrastingColors[randomIndex] },
-                  ]}
-                >
+                <Text style={[styles.bonusTitle]}>
                   {category.spendBonusCategoryName}:{" "}
                 </Text>
                 {category.spendBonusDesc}
@@ -196,35 +201,15 @@ export default function HomeScreen() {
       <View style={styles.headerContainer}>
         <Text style={styles.header}>Home</Text>
         <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen")}>
-          {" "}
-          {/* <View style={styles.centeredAvatarContainer}> */}
           <Avatar.Image
             width={50}
             height={50}
             style={{ backgroundColor: "transparent" }}
             source={require("../../assets/avatar.svg")}
           />
-          {/* </View> */}
         </TouchableOpacity>
       </View>
-      {/* <View style={{ position: "relative" }}> */}
-      {/* {cardData.length > 0 ? (
-          <FlatList
-            data={cardData}
-            renderItem={renderCard}
-            keyExtractor={(item, index) => index.toString()}
-            style={styles.cardList}
-            contentContainerStyle={[
-              styles.cardListContainer,
-              { paddingBottom: 100 },
-            ]}
-            //  contentContainerStyle={{ paddingBottom: 100 }}
-          />
-        ) : loading ? (
-          <ActivityIndicator size="large" color="#007bff" />
-        ) : (
-          <Text>Please add more cards to see the available offers.</Text>
-        )} */}
+
       {cardData.length > 0 ? (
         <ScrollView
           contentContainerStyle={[
@@ -248,12 +233,6 @@ export default function HomeScreen() {
       >
         <Image source={addIcon} style={styles.fabIcon} />
       </TouchableOpacity>
-      {/* <FloatingAction
-          // actions={actions}
-          onPressItem={() => navigation.navigate("AddCardScreen")}
-          floatingIcon={addIcon}
-        /> */}
-      {/* </View> */}
     </View>
   );
 }

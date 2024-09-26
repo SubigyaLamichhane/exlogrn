@@ -21,10 +21,6 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CardDataContext } from "../context/CardDataContext";
 
-// const apiLink = `https://8f75-202-51-80-201.ngrok-free.app/api/credit-cards`;
-
-// let cardDataStatic = [];
-
 export default function AddCardScreen({ route }) {
   const { cardDataStatic, loading: loadingCardData } =
     useContext(CardDataContext);

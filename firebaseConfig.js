@@ -1,5 +1,11 @@
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Import Firebase Auth (or other services if needed)
+import {
+  getAuth,
+  initializeAuth,
+  getReactNativePersistence,
+} from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { getReactNativePersistence } from "firebase/auth/react-native";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBdjN3FX1Qyw1D1vaB1GYxr26igF9P3mIQ",
@@ -18,6 +24,20 @@ if (!getApps().length) {
   app = getApps()[0]; // Get the already initialized app
 }
 
-const auth = getAuth(app); // Initialize Firebase Authentication
+// Initialize Firebase Auth with Async Storage for persistence
+// Check if Auth has already been initialized
+let auth;
+try {
+  auth = getAuth(app);
+} catch (error) {
+  // If getAuth throws an error, it means auth has not been initialized, so we initialize it here
+  if (error.message.includes("auth/initialize-auth")) {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } else {
+    console.error("Error initializing auth:", error);
+  }
+}
 
 export { auth };
