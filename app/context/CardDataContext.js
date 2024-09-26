@@ -1,6 +1,7 @@
 // CardDataContext.js
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { View } from "react-native-web";
 
 export const CardDataContext = createContext();
 
@@ -20,6 +21,7 @@ export const CardDataProvider = ({ children }) => {
       });
       setCardDataStatic(data);
       setLoading(false);
+      console.log("Card data fetched successfully", data);
     } catch (error) {
       console.error("Error fetching card data:", error);
       setLoading(false);

@@ -53,6 +53,7 @@ export default function LoginScreen({ navigation }) {
         {
           headers: {
             "Content-Type": "application/json", // Set the correct content type
+            "ngrok-skip-browser-warning": "69420",
           },
         }
       );

@@ -91,6 +91,7 @@ export default function AddCardScreen({ route }) {
           "Content-Type": "application/json",
           // Set the access token in the Authorization header
           Authorization: `Bearer ${accessToken}`,
+          "ngrok-skip-browser-warning": "69420",
         },
       }
     );

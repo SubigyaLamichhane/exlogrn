@@ -20,7 +20,6 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <CardDataProvider>
-      {" "}
       {/* Wrap the app with the CardDataProvider */}
       <Provider theme={theme}>
         <NavigationContainer>

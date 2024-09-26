@@ -85,6 +85,7 @@ export default function HomeScreen() {
             headers: {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
+              "ngrok-skip-browser-warning": "69420",
             },
           }
         );
@@ -111,6 +112,7 @@ export default function HomeScreen() {
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
+              "ngrok-skip-browser-warning": "69420",
             },
           }
         );
